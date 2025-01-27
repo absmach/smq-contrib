@@ -12,10 +12,10 @@ import (
 
 	mglog "github.com/absmach/magistrala/logger"
 	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/absmach/magistrala/pkg/transformers/json"
-	"github.com/absmach/magistrala/pkg/transformers/senml"
 	"github.com/absmach/magistrala/pkg/uuid"
 	writer "github.com/absmach/mg-contrib/consumers/writers/influxdb"
+	"github.com/absmach/supermq/pkg/transformers/json"
+	"github.com/absmach/supermq/pkg/transformers/senml"
 	influxdata "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/stretchr/testify/assert"
 )

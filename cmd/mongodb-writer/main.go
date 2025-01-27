@@ -14,7 +14,6 @@ import (
 
 	chclient "github.com/absmach/callhome/pkg/client"
 	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/consumers"
 	consumertracing "github.com/absmach/magistrala/consumers/tracing"
 	"github.com/absmach/magistrala/consumers/writers/api"
 	mglog "github.com/absmach/magistrala/logger"
@@ -27,6 +26,7 @@ import (
 	"github.com/absmach/magistrala/pkg/uuid"
 	"github.com/absmach/mg-contrib/consumers/writers/mongodb"
 	mongoclient "github.com/absmach/mg-contrib/pkg/clients/mongo"
+	"github.com/absmach/supermq/consumers"
 	"github.com/caarlos0/env/v10"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/sync/errgroup"

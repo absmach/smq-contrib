@@ -4,8 +4,8 @@
 package influxdb
 
 import (
-	"github.com/absmach/magistrala/pkg/transformers/json"
-	"github.com/absmach/magistrala/pkg/transformers/senml"
+	"github.com/absmach/supermq/pkg/transformers/json"
+	"github.com/absmach/supermq/pkg/transformers/senml"
 )
 
 type tags map[string]string

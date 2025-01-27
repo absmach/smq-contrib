@@ -12,9 +12,9 @@ import (
 	"unicode"
 
 	"github.com/absmach/magistrala/pkg/errors"
-	jsont "github.com/absmach/magistrala/pkg/transformers/json"
-	"github.com/absmach/magistrala/pkg/transformers/senml"
 	"github.com/absmach/magistrala/readers"
+	jsont "github.com/absmach/supermq/pkg/transformers/json"
+	"github.com/absmach/supermq/pkg/transformers/senml"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
 

@@ -14,7 +14,6 @@ import (
 
 	chclient "github.com/absmach/callhome/pkg/client"
 	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/consumers"
 	consumertracing "github.com/absmach/magistrala/consumers/tracing"
 	"github.com/absmach/magistrala/consumers/writers/api"
 	mglog "github.com/absmach/magistrala/logger"
@@ -26,6 +25,7 @@ import (
 	"github.com/absmach/magistrala/pkg/uuid"
 	"github.com/absmach/mg-contrib/consumers/writers/influxdb"
 	influxdbclient "github.com/absmach/mg-contrib/pkg/clients/influxdb"
+	"github.com/absmach/supermq/consumers"
 	"github.com/caarlos0/env/v10"
 	"golang.org/x/sync/errgroup"
 )

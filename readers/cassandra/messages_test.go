@@ -9,13 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/absmach/magistrala/pkg/transformers/json"
-	"github.com/absmach/magistrala/pkg/transformers/senml"
 	"github.com/absmach/magistrala/readers"
 	cwriter "github.com/absmach/mg-contrib/consumers/writers/cassandra"
 	casclient "github.com/absmach/mg-contrib/pkg/clients/cassandra"
 	"github.com/absmach/mg-contrib/pkg/testsutil"
 	creader "github.com/absmach/mg-contrib/readers/cassandra"
+	"github.com/absmach/supermq/pkg/transformers/json"
+	"github.com/absmach/supermq/pkg/transformers/senml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
