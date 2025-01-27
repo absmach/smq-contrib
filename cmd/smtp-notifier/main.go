@@ -13,26 +13,28 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/consumers"
 	"github.com/absmach/magistrala/consumers/notifiers"
 	"github.com/absmach/magistrala/consumers/notifiers/api"
 	notifierpg "github.com/absmach/magistrala/consumers/notifiers/postgres"
 	"github.com/absmach/magistrala/consumers/notifiers/tracing"
-	mglog "github.com/absmach/magistrala/logger"
-	"github.com/absmach/magistrala/pkg/auth"
-	jaegerclient "github.com/absmach/magistrala/pkg/jaeger"
-	"github.com/absmach/magistrala/pkg/messaging/brokers"
-	brokerstracing "github.com/absmach/magistrala/pkg/messaging/brokers/tracing"
-	pgclient "github.com/absmach/magistrala/pkg/postgres"
 	"github.com/absmach/magistrala/pkg/prometheus"
-	"github.com/absmach/magistrala/pkg/server"
-	httpserver "github.com/absmach/magistrala/pkg/server/http"
-	"github.com/absmach/magistrala/pkg/ulid"
-	"github.com/absmach/magistrala/pkg/uuid"
 	"github.com/absmach/mg-contrib/consumers/notifiers/smtp"
 	email "github.com/absmach/mg-contrib/pkg/email"
-	"github.com/caarlos0/env/v10"
+	"github.com/absmach/supermq"
+	"github.com/absmach/supermq/consumers"
+	smqlog "github.com/absmach/supermq/logger"
+	smqauthn "github.com/absmach/supermq/pkg/authn"
+	authsvcAuthn "github.com/absmach/supermq/pkg/authn/authsvc"
+	"github.com/absmach/supermq/pkg/grpcclient"
+	jaegerclient "github.com/absmach/supermq/pkg/jaeger"
+	"github.com/absmach/supermq/pkg/messaging/brokers"
+	brokerstracing "github.com/absmach/supermq/pkg/messaging/brokers/tracing"
+	pgclient "github.com/absmach/supermq/pkg/postgres"
+	"github.com/absmach/supermq/pkg/server"
+	httpserver "github.com/absmach/supermq/pkg/server/http"
+	"github.com/absmach/supermq/pkg/ulid"
+	"github.com/absmach/supermq/pkg/uuid"
+	"github.com/caarlos0/env/v11"
 	"github.com/jmoiron/sqlx"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
@@ -67,13 +69,13 @@ func main() {
 		log.Fatalf("failed to load %s configuration : %s", svcName, err)
 	}
 
-	logger, err := mglog.New(os.Stdout, cfg.LogLevel)
+	logger, err := smqlog.New(os.Stdout, cfg.LogLevel)
 	if err != nil {
 		log.Fatalf("failed to init logger: %s", err.Error())
 	}
 
 	var exitCode int
-	defer mglog.ExitWithError(&exitCode)
+	defer smqlog.ExitWithError(&exitCode)
 
 	if cfg.InstanceID == "" {
 		if cfg.InstanceID, err = uuid.New().ID(); err != nil {
@@ -133,24 +135,22 @@ func main() {
 	defer pubSub.Close()
 	pubSub = brokerstracing.NewPubSub(httpServerConfig, tracer, pubSub)
 
-	authConfig := auth.Config{}
-	if err := env.ParseWithOptions(&authConfig, env.Options{Prefix: envPrefixAuth}); err != nil {
-		logger.Error(fmt.Sprintf("failed to load %s auth configuration : %s", svcName, err))
+	grpcCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&grpcCfg, env.Options{Prefix: envPrefixAuth}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load auth gRPC client configuration : %s", err))
 		exitCode = 1
 		return
 	}
-
-	authClient, authHandler, err := auth.Setup(ctx, authConfig)
+	authn, authnClient, err := authsvcAuthn.NewAuthentication(ctx, grpcCfg)
 	if err != nil {
 		logger.Error(err.Error())
 		exitCode = 1
 		return
 	}
-	defer authHandler.Close()
+	logger.Info("AuthN successfully connected to auth gRPC server " + authnClient.Secure())
+	defer authnClient.Close()
 
-	logger.Info("Successfully connected to auth grpc server " + authHandler.Secure())
-
-	svc, err := newService(db, tracer, authClient, cfg, ec, logger)
+	svc, err := newService(db, tracer, authn, cfg, ec, logger)
 	if err != nil {
 		logger.Error(err.Error())
 		exitCode = 1
@@ -166,7 +166,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(svc, logger, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 
@@ -183,7 +183,7 @@ func main() {
 	}
 }
 
-func newService(db *sqlx.DB, tracer trace.Tracer, authClient magistrala.AuthServiceClient, c config, ec email.Config, logger *slog.Logger) (notifiers.Service, error) {
+func newService(db *sqlx.DB, tracer trace.Tracer, authClient smqauthn.Authentication, c config, ec email.Config, logger *slog.Logger) (notifiers.Service, error) {
 	database := notifierpg.NewDatabase(db, tracer)
 	repo := tracing.New(tracer, notifierpg.New(database))
 	idp := ulid.New()

@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/absmach/magistrala/pkg/transformers/senml"
 	"github.com/absmach/magistrala/readers"
+	"github.com/absmach/supermq/pkg/transformers/senml"
 	"github.com/gocql/gocql"
 )
 
