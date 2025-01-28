@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/absmach/magistrala/lora"
+	"github.com/absmach/supermq-contrib/lora"
 	"github.com/go-redis/redis/v8"
 )
 

@@ -7,9 +7,9 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/absmach/magistrala/pkg/messaging"
-	twins "github.com/absmach/mg-contrib/twins"
 	"github.com/absmach/senml"
+	twins "github.com/absmach/supermq-contrib/twins"
+	"github.com/absmach/supermq/pkg/messaging"
 )
 
 var (

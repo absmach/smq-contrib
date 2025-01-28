@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/absmach/mg-contrib/twins"
-	"github.com/absmach/mg-contrib/twins/events"
-	"github.com/absmach/mg-contrib/twins/mocks"
+	"github.com/absmach/supermq-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins/events"
+	"github.com/absmach/supermq-contrib/twins/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

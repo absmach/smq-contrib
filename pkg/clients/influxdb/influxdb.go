@@ -7,7 +7,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/absmach/magistrala/pkg/errors"
+	"github.com/absmach/supermq/pkg/errors"
 	"github.com/caarlos0/env/v10"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )

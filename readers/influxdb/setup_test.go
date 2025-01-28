@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	mglog "github.com/absmach/magistrala/logger"
+	mglog "github.com/absmach/supermq/logger"
 	influxdata "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"

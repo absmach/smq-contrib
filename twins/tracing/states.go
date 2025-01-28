@@ -6,7 +6,7 @@ package tracing
 import (
 	"context"
 
-	"github.com/absmach/mg-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins"
 	"go.opentelemetry.io/otel/trace"
 )
 

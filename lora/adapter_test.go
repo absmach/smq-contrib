@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/absmach/magistrala/lora"
-	"github.com/absmach/magistrala/lora/mocks"
-	"github.com/absmach/magistrala/pkg/errors"
-	pubmocks "github.com/absmach/magistrala/pkg/messaging/mocks"
+	"github.com/absmach/supermq-contrib/lora"
+	"github.com/absmach/supermq-contrib/lora/mocks"
+	"github.com/absmach/supermq/pkg/errors"
+	pubmocks "github.com/absmach/supermq/pkg/messaging/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

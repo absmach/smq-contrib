@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	mglog "github.com/absmach/magistrala/logger"
+	mglog "github.com/absmach/supermq/logger"
 	"github.com/pelletier/go-toml"
 )
 

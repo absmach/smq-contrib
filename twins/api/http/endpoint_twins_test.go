@@ -14,12 +14,12 @@ import (
 	"testing"
 
 	"github.com/absmach/magistrala"
-	mglog "github.com/absmach/magistrala/logger"
-	"github.com/absmach/magistrala/pkg/apiutil"
-	svcerr "github.com/absmach/magistrala/pkg/errors/service"
-	"github.com/absmach/mg-contrib/pkg/testsutil"
-	"github.com/absmach/mg-contrib/twins"
-	httpapi "github.com/absmach/mg-contrib/twins/api/http"
+	"github.com/absmach/supermq-contrib/pkg/testsutil"
+	"github.com/absmach/supermq-contrib/twins"
+	httpapi "github.com/absmach/supermq-contrib/twins/api/http"
+	mglog "github.com/absmach/supermq/logger"
+	"github.com/absmach/supermq/pkg/apiutil"
+	svcerr "github.com/absmach/supermq/pkg/errors/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

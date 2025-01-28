@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/absmach/magistrala"
-	"github.com/absmach/mg-contrib/opcua"
+	"github.com/absmach/supermq-contrib/opcua"
 )
 
 var _ magistrala.Response = (*browseRes)(nil)

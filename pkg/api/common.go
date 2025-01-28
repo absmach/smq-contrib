@@ -9,11 +9,10 @@ import (
 	"net/http"
 
 	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/bootstrap"
-	"github.com/absmach/magistrala/pkg/apiutil"
-	mgclients "github.com/absmach/magistrala/pkg/clients"
-	"github.com/absmach/magistrala/pkg/errors"
-	svcerr "github.com/absmach/magistrala/pkg/errors/service"
+	"github.com/absmach/supermq/bootstrap"
+	"github.com/absmach/supermq/pkg/apiutil"
+	"github.com/absmach/supermq/pkg/errors"
+	svcerr "github.com/absmach/supermq/pkg/errors/service"
 	"github.com/gofrs/uuid"
 )
 
@@ -52,8 +51,6 @@ const (
 	DefLimit         = 10
 	DefLevel         = 0
 	DefStatus        = "enabled"
-	DefClientStatus  = mgclients.Enabled
-	DefGroupStatus   = mgclients.Enabled
 	DefListPerms     = false
 	SharedVisibility = "shared"
 	MyVisibility     = "mine"

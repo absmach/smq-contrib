@@ -1,4 +1,4 @@
-module github.com/absmach/mg-contrib
+module github.com/absmach/supermq-contrib
 
 go 1.22.5
 toolchain go1.23.4

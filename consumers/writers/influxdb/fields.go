@@ -4,7 +4,7 @@
 package influxdb
 
 import (
-	"github.com/absmach/magistrala/pkg/transformers/senml"
+	"github.com/absmach/supermq/pkg/transformers/senml"
 )
 
 type fields map[string]interface{}

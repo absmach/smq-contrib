@@ -7,7 +7,7 @@ package mocks
 import (
 	context "context"
 
-	twins "github.com/absmach/mg-contrib/twins"
+	twins "github.com/absmach/supermq-contrib/twins"
 	mock "github.com/stretchr/testify/mock"
 )
 

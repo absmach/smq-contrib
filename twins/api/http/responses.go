@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/absmach/magistrala"
-	"github.com/absmach/mg-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins"
 )
 
 var (

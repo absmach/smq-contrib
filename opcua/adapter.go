@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/absmach/mg-contrib/opcua/db"
+	"github.com/absmach/supermq-contrib/opcua/db"
 )
 
 // Service specifies an API that must be fullfiled by the domain service

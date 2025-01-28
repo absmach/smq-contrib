@@ -7,8 +7,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/absmach/magistrala/lora"
-	"github.com/absmach/magistrala/pkg/events"
+	"github.com/absmach/supermq-contrib/lora"
+	"github.com/absmach/supermq/pkg/events"
 )
 
 const (

@@ -9,8 +9,8 @@ import (
 	"os"
 	"testing"
 
-	mglog "github.com/absmach/magistrala/logger"
-	casclient "github.com/absmach/mg-contrib/pkg/clients/cassandra"
+	casclient "github.com/absmach/supermq-contrib/pkg/clients/cassandra"
+	mglog "github.com/absmach/supermq/logger"
 	"github.com/gocql/gocql"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"

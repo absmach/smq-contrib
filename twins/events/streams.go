@@ -6,10 +6,10 @@ package events
 import (
 	"context"
 
-	"github.com/absmach/magistrala/pkg/events"
-	"github.com/absmach/magistrala/pkg/events/store"
-	"github.com/absmach/magistrala/pkg/messaging"
-	"github.com/absmach/mg-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins"
+	"github.com/absmach/supermq/pkg/events"
+	"github.com/absmach/supermq/pkg/events/store"
+	"github.com/absmach/supermq/pkg/messaging"
 )
 
 const streamID = "magistrala.twins"
