@@ -13,7 +13,7 @@ import (
 	"github.com/absmach/magistrala"
 	"github.com/absmach/supermq-contrib/pkg/api"
 	"github.com/absmach/supermq-contrib/pkg/testsutil"
-	"github.com/absmach/supermq/pkg/apiutil"
+	apiutil "github.com/absmach/supermq/api/http/util"
 	"github.com/absmach/supermq/pkg/errors"
 	svcerr "github.com/absmach/supermq/pkg/errors/service"
 	"github.com/stretchr/testify/assert"

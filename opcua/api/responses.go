@@ -6,11 +6,11 @@ package api
 import (
 	"net/http"
 
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
 	"github.com/absmach/supermq-contrib/opcua"
 )
 
-var _ magistrala.Response = (*browseRes)(nil)
+var _ supermq.Response = (*browseRes)(nil)
 
 type browseRes struct {
 	Nodes []opcua.BrowsedNode `json:"nodes"`

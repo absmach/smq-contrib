@@ -7,7 +7,7 @@ package main
 import (
 	"log"
 
-	"github.com/absmach/supermq/tools/provision"
+	"github.com/absmach/supermq-contrib/tools/provision"
 	"github.com/spf13/cobra"
 )
 

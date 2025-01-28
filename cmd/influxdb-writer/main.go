@@ -14,11 +14,11 @@ import (
 
 	chclient "github.com/absmach/callhome/pkg/client"
 	"github.com/absmach/magistrala"
+	consumertracing "github.com/absmach/supermq-contrib/consumers/tracing"
+	"github.com/absmach/supermq-contrib/consumers/writers/api"
 	"github.com/absmach/supermq-contrib/consumers/writers/influxdb"
 	influxdbclient "github.com/absmach/supermq-contrib/pkg/clients/influxdb"
 	"github.com/absmach/supermq/consumers"
-	consumertracing "github.com/absmach/supermq/consumers/tracing"
-	"github.com/absmach/supermq/consumers/writers/api"
 	mglog "github.com/absmach/supermq/logger"
 	"github.com/absmach/supermq/pkg/jaeger"
 	"github.com/absmach/supermq/pkg/messaging/brokers"

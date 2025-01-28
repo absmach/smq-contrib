@@ -13,7 +13,7 @@ import (
 	"github.com/absmach/magistrala"
 	"github.com/absmach/supermq-contrib/pkg/api"
 	"github.com/absmach/supermq-contrib/twins"
-	"github.com/absmach/supermq/pkg/apiutil"
+	apiutil "github.com/absmach/supermq/api/http/util"
 	"github.com/absmach/supermq/pkg/errors"
 	"github.com/go-chi/chi/v5"
 	kithttp "github.com/go-kit/kit/transport/http"

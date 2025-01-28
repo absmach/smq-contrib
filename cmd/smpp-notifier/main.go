@@ -13,15 +13,15 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
+	"github.com/absmach/supermq-contrib/consumers/notifiers"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/api"
+	notifierpg "github.com/absmach/supermq-contrib/consumers/notifiers/postgres"
 	mgsmpp "github.com/absmach/supermq-contrib/consumers/notifiers/smpp"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/tracing"
 	"github.com/absmach/supermq/consumers"
-	"github.com/absmach/supermq/consumers/notifiers"
-	"github.com/absmach/supermq/consumers/notifiers/api"
-	notifierpg "github.com/absmach/supermq/consumers/notifiers/postgres"
-	"github.com/absmach/supermq/consumers/notifiers/tracing"
 	mglog "github.com/absmach/supermq/logger"
-	"github.com/absmach/supermq/pkg/auth"
+	auth "github.com/absmach/supermq/pkg/authn"
 	jaegerclient "github.com/absmach/supermq/pkg/jaeger"
 	"github.com/absmach/supermq/pkg/messaging/brokers"
 	brokerstracing "github.com/absmach/supermq/pkg/messaging/brokers/tracing"
@@ -158,7 +158,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(svc, logger, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 
@@ -175,7 +175,7 @@ func main() {
 	}
 }
 
-func newService(db *sqlx.DB, tracer trace.Tracer, authClient magistrala.AuthServiceClient, c config, sc mgsmpp.Config, logger *slog.Logger) notifiers.Service {
+func newService(db *sqlx.DB, tracer trace.Tracer, authClient supermq.AuthServiceClient, c config, sc mgsmpp.Config, logger *slog.Logger) notifiers.Service {
 	database := notifierpg.NewDatabase(db, tracer)
 	repo := tracing.New(tracer, notifierpg.New(database))
 	idp := ulid.New()

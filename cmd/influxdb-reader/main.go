@@ -12,35 +12,37 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
 	influxdbclient "github.com/absmach/supermq-contrib/pkg/clients/influxdb"
+	"github.com/absmach/supermq-contrib/readers/api"
 	"github.com/absmach/supermq-contrib/readers/influxdb"
 	mglog "github.com/absmach/supermq/logger"
-	"github.com/absmach/supermq/pkg/auth"
+	"github.com/absmach/supermq/pkg/authn/authsvc"
+	"github.com/absmach/supermq/pkg/grpcclient"
 	"github.com/absmach/supermq/pkg/prometheus"
 	"github.com/absmach/supermq/pkg/server"
 	httpserver "github.com/absmach/supermq/pkg/server/http"
 	"github.com/absmach/supermq/pkg/uuid"
 	"github.com/absmach/supermq/readers"
-	"github.com/absmach/supermq/readers/api"
 	"github.com/caarlos0/env/v10"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"golang.org/x/sync/errgroup"
 )
 
 const (
-	svcName        = "influxdb-reader"
-	envPrefixHTTP  = "MG_INFLUX_READER_HTTP_"
-	envPrefixAuth  = "MG_AUTH_GRPC_"
-	envPrefixAuthz = "MG_THINGS_AUTH_GRPC_"
-	envPrefixDB    = "MG_INFLUXDB_"
-	defSvcHTTPPort = "9005"
+	svcName           = "influxdb-reader"
+	envPrefixHTTP     = "SMQ_INFLUX_READER_HTTP_"
+	envPrefixAuth     = "SMQ_AUTH_GRPC_"
+	envPrefixClients  = "SMQ_CLIENTS_AUTH_GRPC_"
+	envPrefixChannels = "SMQ_CHANNELS_GRPC_"
+	envPrefixDB       = "SMQ_INFLUXDB_"
+	defSvcHTTPPort    = "9005"
 )
 
 type config struct {
-	LogLevel      string `env:"MG_INFLUX_READER_LOG_LEVEL"     envDefault:"info"`
-	SendTelemetry bool   `env:"MG_SEND_TELEMETRY"              envDefault:"true"`
-	InstanceID    string `env:"MG_INFLUX_READER_INSTANCE_ID"   envDefault:""`
+	LogLevel      string `env:"SMQ_INFLUX_READER_LOG_LEVEL"     envDefault:"info"`
+	SendTelemetry bool   `env:"SMQ_SEND_TELEMETRY"              envDefault:"true"`
+	InstanceID    string `env:"SMQ_INFLUX_READER_INSTANCE_ID"   envDefault:""`
 }
 
 func main() {
@@ -68,39 +70,53 @@ func main() {
 		}
 	}
 
-	authConfig := auth.Config{}
-	if err := env.ParseWithOptions(&authConfig, env.Options{Prefix: envPrefixAuth}); err != nil {
-		logger.Error(fmt.Sprintf("failed to load %s auth configuration : %s", svcName, err))
+	clientsClientCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&clientsClientCfg, env.Options{Prefix: envPrefixClients}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load clients gRPC client configuration : %s", err))
 		exitCode = 1
 		return
 	}
 
-	ac, acHandler, err := auth.Setup(ctx, authConfig)
+	clientsClient, clientsHandler, err := grpcclient.SetupClientsClient(ctx, clientsClientCfg)
 	if err != nil {
 		logger.Error(err.Error())
 		exitCode = 1
 		return
 	}
-	defer acHandler.Close()
+	defer clientsHandler.Close()
+	logger.Info("Clients service gRPC client successfully connected to clients gRPC server " + clientsHandler.Secure())
 
-	logger.Info("Successfully connected to auth grpc server " + acHandler.Secure())
-
-	authConfig = auth.Config{}
-	if err := env.ParseWithOptions(&authConfig, env.Options{Prefix: envPrefixAuthz}); err != nil {
-		logger.Error(fmt.Sprintf("failed to load %s auth configuration : %s", svcName, err))
+	channelsClientCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&channelsClientCfg, env.Options{Prefix: envPrefixChannels}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load channels gRPC client configuration : %s", err))
 		exitCode = 1
 		return
 	}
 
-	tc, tcHandler, err := auth.SetupAuthz(ctx, authConfig)
+	channelsClient, channelsHandler, err := grpcclient.SetupChannelsClient(ctx, channelsClientCfg)
 	if err != nil {
 		logger.Error(err.Error())
 		exitCode = 1
 		return
 	}
-	defer tcHandler.Close()
+	defer channelsHandler.Close()
+	logger.Info("Channels service gRPC client successfully connected to channels gRPC server " + channelsHandler.Secure())
 
-	logger.Info("Successfully connected to things grpc server " + tcHandler.Secure())
+	authnCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&authnCfg, env.Options{Prefix: envPrefixAuth}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load auth gRPC client configuration : %s", err))
+		exitCode = 1
+		return
+	}
+
+	authn, authnHandler, err := authsvc.NewAuthentication(ctx, authnCfg)
+	if err != nil {
+		logger.Error(err.Error())
+		exitCode = 1
+		return
+	}
+	defer authnHandler.Close()
+	logger.Info("authn successfully connected to auth gRPC server " + authnHandler.Secure())
 
 	influxDBConfig := influxdbclient.Config{}
 	if err := env.ParseWithOptions(&influxDBConfig, env.Options{Prefix: envPrefixDB}); err != nil {
@@ -131,10 +147,11 @@ func main() {
 		exitCode = 1
 		return
 	}
-	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(repo, ac, tc, svcName, cfg.InstanceID), logger)
+
+	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(repo, authn, clientsClient, channelsClient, svcName, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 

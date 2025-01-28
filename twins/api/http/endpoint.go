@@ -7,7 +7,7 @@ import (
 	"context"
 
 	"github.com/absmach/supermq-contrib/twins"
-	"github.com/absmach/supermq/pkg/apiutil"
+	apiutil "github.com/absmach/supermq/api/http/util"
 	"github.com/absmach/supermq/pkg/errors"
 	"github.com/go-kit/kit/endpoint"
 )

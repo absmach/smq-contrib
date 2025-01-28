@@ -23,7 +23,7 @@ import (
 	twmongodb "github.com/absmach/supermq-contrib/twins/mongodb"
 	"github.com/absmach/supermq-contrib/twins/tracing"
 	mglog "github.com/absmach/supermq/logger"
-	"github.com/absmach/supermq/pkg/auth"
+	auth "github.com/absmach/supermq/pkg/authn"
 	jaegerclient "github.com/absmach/supermq/pkg/jaeger"
 	"github.com/absmach/supermq/pkg/messaging"
 	"github.com/absmach/supermq/pkg/messaging/brokers"
