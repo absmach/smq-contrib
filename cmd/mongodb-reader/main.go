@@ -12,10 +12,10 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
 
-	"github.com/absmach/magistrala/readers/api"
 	mongoclient "github.com/absmach/supermq-contrib/pkg/clients/mongo"
+	"github.com/absmach/supermq-contrib/readers/api"
 	"github.com/absmach/supermq-contrib/readers/mongodb"
 	mglog "github.com/absmach/supermq/logger"
 	"github.com/absmach/supermq/pkg/authn/authsvc"
@@ -31,11 +31,13 @@ import (
 )
 
 const (
-	svcName        = "mongodb-reader"
-	envPrefixDB    = "MG_MONGO_"
-	envPrefixHTTP  = "MG_MONGO_READER_HTTP_"
-	envPrefixAuth  = "MG_AUTH_GRPC_"
-	envPrefixAuthz = "MG_THINGS_AUTH_GRPC_"
+	svcName           = "mongodb-reader"
+	envPrefixDB       = "MG_MONGO_"
+	envPrefixHTTP     = "MG_MONGO_READER_HTTP_"
+	envPrefixAuth     = "SMQ_AUTH_GRPC_"
+	envPrefixClients  = "SMQ_CLIENTS_AUTH_GRPC_"
+	envPrefixChannels = "SMQ_CHANNELS_GRPC_"
+
 	defSvcHTTPPort = "9007"
 )
 
@@ -133,10 +135,10 @@ func main() {
 		exitCode = 1
 		return
 	}
-	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, httpapi.MakeHandler(repo, authn, clientsClient, channelsClient, svcName, cfg.InstanceID), logger)
+	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(repo, authn, clientsClient, channelsClient, svcName, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 

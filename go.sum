@@ -20,8 +20,6 @@ github.com/absmach/certs v0.0.0-20241014135535-3f118b801054 h1:NsIwp+ueKxDx8Xftr
 github.com/absmach/certs v0.0.0-20241014135535-3f118b801054/go.mod h1:bEAb/HjPztlrMmz8dLeJTke4Tzu9yW3+hY5eldEUtSY=
 github.com/absmach/magistrala v0.15.1 h1:3Bk2hlyWcV591LxPYwlvRcyCXTfuZ1g/EkNmU+o3NNQ=
 github.com/absmach/magistrala v0.15.1/go.mod h1:9pto6xuBt/IuCtZRdEha0iDQKNQ5tyNOjLXJgUiikYk=
-github.com/absmach/mg-contrib v0.0.0-20250121110903-394223aa03a3 h1:JlbVJjqw1Kcnc1epPMKzRCCU3clA8ZWMkjBvaDahOGE=
-github.com/absmach/mg-contrib v0.0.0-20250121110903-394223aa03a3/go.mod h1:b2yVjXUh3McMm+to/MfC69Umj2uvmuA5E6fvqMIDA3w=
 github.com/absmach/mgate v0.4.5 h1:l6RmrEsR9jxkdb9WHUSecmT0HA41TkZZQVffFfUAIfI=
 github.com/absmach/mgate v0.4.5/go.mod h1:IvRIHZexZPEIAPmmaJF0L5DY2ERjj+GxRGitOW4s6qo=
 github.com/absmach/senml v1.0.6 h1:WPeIl6vQ00k7ghWSZYT/QP0KUxq2+4zQoaC7240pLFk=

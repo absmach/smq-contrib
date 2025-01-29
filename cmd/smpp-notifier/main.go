@@ -1,7 +1,7 @@
 // Copyright (c) Abstract Machines
 // SPDX-License-Identifier: Apache-2.0
 
-// Package main contains smpp-notifier main function to start the smpp-notifier service.
+// Package main contains smtp-notifier main function to start the smtp-notifier service.
 package main
 
 import (
@@ -17,11 +17,13 @@ import (
 	"github.com/absmach/supermq-contrib/consumers/notifiers"
 	"github.com/absmach/supermq-contrib/consumers/notifiers/api"
 	notifierpg "github.com/absmach/supermq-contrib/consumers/notifiers/postgres"
-	mgsmpp "github.com/absmach/supermq-contrib/consumers/notifiers/smpp"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/smpp"
 	"github.com/absmach/supermq-contrib/consumers/notifiers/tracing"
 	"github.com/absmach/supermq/consumers"
 	mglog "github.com/absmach/supermq/logger"
-	auth "github.com/absmach/supermq/pkg/authn"
+	"github.com/absmach/supermq/pkg/authn"
+	"github.com/absmach/supermq/pkg/authn/authsvc"
+	"github.com/absmach/supermq/pkg/grpcclient"
 	jaegerclient "github.com/absmach/supermq/pkg/jaeger"
 	"github.com/absmach/supermq/pkg/messaging/brokers"
 	brokerstracing "github.com/absmach/supermq/pkg/messaging/brokers/tracing"
@@ -38,23 +40,25 @@ import (
 )
 
 const (
-	svcName        = "smpp-notifier"
-	envPrefixDB    = "MG_SMPP_NOTIFIER_DB_"
-	envPrefixHTTP  = "MG_SMPP_NOTIFIER_HTTP_"
-	envPrefixAuth  = "MG_AUTH_GRPC_"
-	defDB          = "subscriptions"
-	defSvcHTTPPort = "9014"
+	svcName           = "smtp-notifier"
+	envPrefixDB       = "MG_SMTP_NOTIFIER_DB_"
+	envPrefixHTTP     = "MG_SMTP_NOTIFIER_HTTP_"
+	envPrefixAuth     = "SMQ_AUTH_GRPC_"
+	envPrefixClients  = "SMQ_CLIENTS_AUTH_GRPC_"
+	envPrefixChannels = "SMQ_CHANNELS_GRPC_"
+	defDB             = "subscriptions"
+	defSvcHTTPPort    = "9015"
 )
 
 type config struct {
-	LogLevel      string  `env:"MG_SMPP_NOTIFIER_LOG_LEVEL"     envDefault:"info"`
-	From          string  `env:"MG_SMPP_NOTIFIER_FROM_ADDR"     envDefault:""`
-	ConfigPath    string  `env:"MG_SMPP_NOTIFIER_CONFIG_PATH"   envDefault:"/config.toml"`
-	BrokerURL     string  `env:"MG_MESSAGE_BROKER_URL"          envDefault:"nats://localhost:4222"`
-	JaegerURL     url.URL `env:"MG_JAEGER_URL"                  envDefault:"http://jaeger:14268/api/traces"`
-	SendTelemetry bool    `env:"MG_SEND_TELEMETRY"              envDefault:"true"`
-	InstanceID    string  `env:"MG_SMPP_NOTIFIER_INSTANCE_ID"   envDefault:""`
-	TraceRatio    float64 `env:"MG_JAEGER_TRACE_RATIO"          envDefault:"1.0"`
+	LogLevel      string  `env:"SMQ_SMTP_NOTIFIER_LOG_LEVEL"    envDefault:"info"`
+	ConfigPath    string  `env:"SMQ_SMTP_NOTIFIER_CONFIG_PATH"  envDefault:"/config.toml"`
+	From          string  `env:"SMQ_SMTP_NOTIFIER_FROM_ADDR"    envDefault:""`
+	BrokerURL     string  `env:"SMQ_MESSAGE_BROKER_URL"         envDefault:"nats://localhost:4222"`
+	JaegerURL     url.URL `env:"SMQ_JAEGER_URL"                 envDefault:"http://jaeger:14268/api/traces"`
+	SendTelemetry bool    `env:"SMQ_SEND_TELEMETRY"             envDefault:"true"`
+	InstanceID    string  `env:"SMQ_SMTP_NOTIFIER_INSTANCE_ID"  envDefault:""`
+	TraceRatio    float64 `env:"SMQ_JAEGER_TRACE_RATIO"         envDefault:"1.0"`
 }
 
 func main() {
@@ -96,7 +100,7 @@ func main() {
 	}
 	defer db.Close()
 
-	smppConfig := mgsmpp.Config{}
+	smppConfig := smpp.Config{}
 	if err := env.Parse(&smppConfig); err != nil {
 		logger.Error(fmt.Sprintf("failed to load SMPP configuration from environment : %s", err))
 		exitCode = 1
@@ -112,7 +116,7 @@ func main() {
 
 	tp, err := jaegerclient.NewProvider(ctx, svcName, cfg.JaegerURL, cfg.InstanceID, cfg.TraceRatio)
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to init Jaeger: %s", err))
+		logger.Error(fmt.Sprintf("failed to init Jaeger: %s", err))
 		exitCode = 1
 		return
 	}
@@ -132,23 +136,31 @@ func main() {
 	defer pubSub.Close()
 	pubSub = brokerstracing.NewPubSub(httpServerConfig, tracer, pubSub)
 
-	authConfig := auth.Config{}
-	if err := env.ParseWithOptions(&authConfig, env.Options{Prefix: envPrefixAuth}); err != nil {
-		logger.Error(fmt.Sprintf("failed to load %s auth configuration : %s", svcName, err))
+	clientsClientCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&clientsClientCfg, env.Options{Prefix: envPrefixClients}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load clients gRPC client configuration : %s", err))
 		exitCode = 1
 		return
 	}
 
-	authClient, authHandler, err := auth.Setup(ctx, authConfig)
+	authnCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&authnCfg, env.Options{Prefix: envPrefixAuth}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load auth gRPC client configuration : %s", err))
+		exitCode = 1
+		return
+	}
+
+	authn, authnHandler, err := authsvc.NewAuthentication(ctx, authnCfg)
 	if err != nil {
 		logger.Error(err.Error())
 		exitCode = 1
 		return
 	}
-	defer authHandler.Close()
-	logger.Info("Successfully connected to auth grpc server " + authHandler.Secure())
+	defer authnHandler.Close()
+	logger.Info("authn successfully connected to auth gRPC server " + authnHandler.Secure())
 
-	svc := newService(db, tracer, authClient, cfg, smppConfig, logger)
+	svc := newService(db, authn, tracer, cfg, smppConfig, logger)
+
 	if err = consumers.Start(ctx, svcName, pubSub, svc, cfg.ConfigPath, logger); err != nil {
 		logger.Error(fmt.Sprintf("failed to create Postgres writer: %s", err))
 		exitCode = 1
@@ -171,15 +183,34 @@ func main() {
 	})
 
 	if err := g.Wait(); err != nil {
-		logger.Error(fmt.Sprintf("SMPP notifier service terminated: %s", err))
+		logger.Error(fmt.Sprintf("SMTP notifier service terminated: %s", err))
 	}
 }
 
-func newService(db *sqlx.DB, tracer trace.Tracer, authClient supermq.AuthServiceClient, c config, sc mgsmpp.Config, logger *slog.Logger) notifiers.Service {
+// func newService(db *sqlx.DB, authClient authn.Authentication, tracer trace.Tracer, c config, ec email.Config, logger *slog.Logger) (notifiers.Service, error) {
+// 	database := notifierpg.NewDatabase(db, tracer)
+// 	repo := tracing.New(tracer, notifierpg.New(database))
+// 	idp := ulid.New()
+
+// 	agent, err := email.New(&ec)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to create email agent: %s", err)
+// 	}
+
+// 	notifier := smtp.New(agent)
+// 	svc := notifiers.New(authClient, repo, idp, notifier, c.From)
+// 	svc = api.LoggingMiddleware(svc, logger)
+// 	counter, latency := prometheus.MakeMetrics("notifier", "smtp")
+// 	svc = api.MetricsMiddleware(svc, counter, latency)
+
+// 	return svc, nil
+// }
+
+func newService(db *sqlx.DB, authClient authn.Authentication, tracer trace.Tracer, c config, sc smpp.Config, logger *slog.Logger) notifiers.Service {
 	database := notifierpg.NewDatabase(db, tracer)
 	repo := tracing.New(tracer, notifierpg.New(database))
 	idp := ulid.New()
-	notifier := mgsmpp.New(sc)
+	notifier := smpp.New(sc)
 	svc := notifiers.New(authClient, repo, idp, notifier, c.From)
 	svc = api.LoggingMiddleware(svc, logger)
 	counter, latency := prometheus.MakeMetrics("notifier", "smpp")

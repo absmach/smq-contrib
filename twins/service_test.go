@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/absmach/magistrala"
 	"github.com/absmach/senml"
+	"github.com/absmach/supermq"
 	"github.com/absmach/supermq-contrib/pkg/testsutil"
 	"github.com/absmach/supermq-contrib/twins"
 	"github.com/absmach/supermq-contrib/twins/mocks"
@@ -84,7 +84,7 @@ func TestAddTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", context.Background(), &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", context.Background(), &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("Save", context.Background(), mock.Anything).Return(retained, tc.saveErr)
 		cacheCall := twinCache.On("Save", context.Background(), mock.Anything).Return(tc.err)
 		_, err := svc.AddTwin(context.Background(), tc.token, tc.twin, def)
@@ -148,7 +148,7 @@ func TestUpdateTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", context.Background(), &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", context.Background(), &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("RetrieveByID", context.Background(), tc.twin.ID).Return(tc.twin, tc.retrieveErr)
 		repoCall1 := twinRepo.On("Update", context.Background(), mock.Anything).Return(tc.updateErr)
 		cacheCall := twinCache.On("Update", context.Background(), mock.Anything).Return(tc.err)
@@ -204,7 +204,7 @@ func TestViewTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", context.Background(), &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", context.Background(), &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("RetrieveByID", context.Background(), tc.id).Return(twins.Twin{}, tc.err)
 		_, err := svc.ViewTwin(context.Background(), tc.token, tc.id)
 		assert.True(t, errors.Contains(err, tc.err), fmt.Sprintf("%s: expected %s got %s\n", tc.desc, tc.err, err))
@@ -275,7 +275,7 @@ func TestListTwins(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", context.Background(), &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", context.Background(), &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("RetrieveAll", context.Background(), mock.Anything, tc.offset, tc.limit, twinName, mock.Anything).Return(twins.Page{}, tc.err)
 		_, err := svc.ListTwins(context.Background(), tc.token, tc.offset, tc.limit, twinName, tc.metadata)
 		assert.True(t, errors.Contains(err, tc.err), fmt.Sprintf("%s: expected %s got %s\n", tc.desc, tc.err, err))
@@ -339,7 +339,7 @@ func TestRemoveTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", context.Background(), &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", context.Background(), &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("Remove", context.Background(), tc.id).Return(tc.removeErr)
 		cacheCall := twinCache.On("Remove", context.Background(), tc.id).Return(tc.err)
 		err := svc.RemoveTwin(context.Background(), tc.token, tc.id)
@@ -433,7 +433,7 @@ func TestSaveStates(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		repoCall := auth.On("Identify", context.TODO(), &magistrala.IdentityReq{Token: token}).Return(&magistrala.IdentityRes{Id: testsutil.GenerateUUID(t)}, nil)
+		repoCall := auth.On("Identify", context.TODO(), &supermq.IdentityReq{Token: token}).Return(&supermq.IdentityRes{Id: testsutil.GenerateUUID(t)}, nil)
 		message, err := mocks.CreateMessage(tc.attr, tc.recs)
 		assert.Nil(t, err, fmt.Sprintf("unexpected error: %s", err))
 
@@ -578,7 +578,7 @@ func TestListStates(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		repoCall := auth.On("Identify", context.TODO(), &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		repoCall := auth.On("Identify", context.TODO(), &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall1 := stateRepo.On("RetrieveAll", context.TODO(), mock.Anything, mock.Anything, tc.id).Return(tc.page, nil)
 		page, err := svc.ListStates(context.TODO(), tc.token, tc.offset, tc.limit, tc.id)
 		assert.Equal(t, tc.err, err, fmt.Sprintf("%s: expected %s got %s\n", tc.desc, tc.err, err))

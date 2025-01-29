@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/absmach/magistrala/consumers/notifiers"
-	"github.com/absmach/magistrala/consumers/notifiers/api"
-	"github.com/absmach/magistrala/consumers/notifiers/mocks"
+	"github.com/absmach/supermq-contrib/consumers/notifiers"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/api"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/mocks"
 	apiutil "github.com/absmach/supermq/api/http/util"
 	smqlog "github.com/absmach/supermq/logger"
 	svcerr "github.com/absmach/supermq/pkg/errors/service"
@@ -547,7 +547,7 @@ func subscriptionsSlice(subs []subRes, start, end int) []notifiers.Subscription 
 	return res
 }
 
-func GenerateUUID(t *testing.T) string {
+func generateUUID(t *testing.T) string {
 	idProvider := uuid.New()
 	ulid, err := idProvider.ID()
 	require.Nil(t, err, fmt.Sprintf("unexpected error: %s", err))

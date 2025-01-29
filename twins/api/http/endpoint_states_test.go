@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/absmach/magistrala"
 	"github.com/absmach/senml"
+	"github.com/absmach/supermq"
 	"github.com/absmach/supermq-contrib/pkg/testsutil"
 	"github.com/absmach/supermq-contrib/twins"
 	"github.com/absmach/supermq-contrib/twins/mocks"
@@ -261,7 +261,7 @@ func TestListStates(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", mock.Anything, &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", mock.Anything, &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := stateRepo.On("RetrieveAll", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tc.page, tc.err)
 		req := testRequest{
 			client: ts.Client(),

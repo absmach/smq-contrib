@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/absmach/magistrala/consumers/notifiers"
 	"github.com/absmach/supermq"
+	"github.com/absmach/supermq-contrib/consumers/notifiers"
 	api "github.com/absmach/supermq/api/http"
 	apiutil "github.com/absmach/supermq/api/http/util"
 	"github.com/absmach/supermq/pkg/errors"

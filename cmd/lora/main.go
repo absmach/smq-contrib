@@ -14,7 +14,7 @@ import (
 	"time"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
 	"github.com/absmach/supermq-contrib/lora"
 	"github.com/absmach/supermq-contrib/lora/api"
 	loraevents "github.com/absmach/supermq-contrib/lora/events"
@@ -153,7 +153,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/absmach/magistrala/consumers/notifiers"
+	"github.com/absmach/supermq-contrib/consumers/notifiers"
 	"github.com/absmach/supermq/pkg/errors"
 	repoerr "github.com/absmach/supermq/pkg/errors/repository"
 	"github.com/jackc/pgerrcode"

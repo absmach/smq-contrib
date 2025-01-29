@@ -10,7 +10,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/absmach/magistrala/consumers/notifiers"
+	"github.com/absmach/supermq-contrib/consumers/notifiers"
+	"github.com/absmach/supermq/pkg/authn"
 )
 
 var _ notifiers.Service = (*loggingMiddleware)(nil)
@@ -27,7 +28,7 @@ func LoggingMiddleware(svc notifiers.Service, logger *slog.Logger) notifiers.Ser
 
 // CreateSubscription logs the create_subscription request. It logs subscription ID and topic and the time it took to complete the request.
 // If the request fails, it logs the error.
-func (lm *loggingMiddleware) CreateSubscription(ctx context.Context, token string, sub notifiers.Subscription) (id string, err error) {
+func (lm *loggingMiddleware) CreateSubscription(ctx context.Context, session authn.Session, sub notifiers.Subscription) (id string, err error) {
 	defer func(begin time.Time) {
 		args := []any{
 			slog.String("duration", time.Since(begin).String()),
@@ -44,12 +45,12 @@ func (lm *loggingMiddleware) CreateSubscription(ctx context.Context, token strin
 		lm.logger.Info("Create subscription completed successfully", args...)
 	}(time.Now())
 
-	return lm.svc.CreateSubscription(ctx, token, sub)
+	return lm.svc.CreateSubscription(ctx, session, sub)
 }
 
 // ViewSubscription logs the view_subscription request. It logs subscription topic and id and the time it took to complete the request.
 // If the request fails, it logs the error.
-func (lm *loggingMiddleware) ViewSubscription(ctx context.Context, token, topic string) (sub notifiers.Subscription, err error) {
+func (lm *loggingMiddleware) ViewSubscription(ctx context.Context, session authn.Session, topic string) (sub notifiers.Subscription, err error) {
 	defer func(begin time.Time) {
 		args := []any{
 			slog.String("duration", time.Since(begin).String()),
@@ -66,12 +67,12 @@ func (lm *loggingMiddleware) ViewSubscription(ctx context.Context, token, topic 
 		lm.logger.Info("View subscription completed successfully", args...)
 	}(time.Now())
 
-	return lm.svc.ViewSubscription(ctx, token, topic)
+	return lm.svc.ViewSubscription(ctx, session, topic)
 }
 
 // ListSubscriptions logs the list_subscriptions request. It logs page metadata and subscription topic and the time it took to complete the request.
 // If the request fails, it logs the error.
-func (lm *loggingMiddleware) ListSubscriptions(ctx context.Context, token string, pm notifiers.PageMetadata) (res notifiers.Page, err error) {
+func (lm *loggingMiddleware) ListSubscriptions(ctx context.Context, sesssion authn.Session, pm notifiers.PageMetadata) (res notifiers.Page, err error) {
 	defer func(begin time.Time) {
 		args := []any{
 			slog.String("duration", time.Since(begin).String()),
@@ -90,12 +91,12 @@ func (lm *loggingMiddleware) ListSubscriptions(ctx context.Context, token string
 		lm.logger.Info("List subscriptions completed successfully", args...)
 	}(time.Now())
 
-	return lm.svc.ListSubscriptions(ctx, token, pm)
+	return lm.svc.ListSubscriptions(ctx, sesssion, pm)
 }
 
 // RemoveSubscription logs the remove_subscription request. It logs subscription ID and the time it took to complete the request.
 // If the request fails, it logs the error.
-func (lm *loggingMiddleware) RemoveSubscription(ctx context.Context, token, id string) (err error) {
+func (lm *loggingMiddleware) RemoveSubscription(ctx context.Context, session authn.Session, id string) (err error) {
 	defer func(begin time.Time) {
 		args := []any{
 			slog.String("duration", time.Since(begin).String()),
@@ -109,7 +110,7 @@ func (lm *loggingMiddleware) RemoveSubscription(ctx context.Context, token, id s
 		lm.logger.Info("Remove subscription completed successfully", args...)
 	}(time.Now())
 
-	return lm.svc.RemoveSubscription(ctx, token, id)
+	return lm.svc.RemoveSubscription(ctx, session, id)
 }
 
 // ConsumeBlocking logs the consume_blocking request. It logs the time it took to complete the request.

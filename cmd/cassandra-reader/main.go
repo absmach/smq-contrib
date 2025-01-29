@@ -11,15 +11,15 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/absmach/mg-contrib/readers/cassandra"
-	"github.com/absmach/supermq-contrib/lora/api"
 	cassandraclient "github.com/absmach/supermq-contrib/pkg/clients/cassandra"
+	"github.com/absmach/supermq-contrib/readers/api"
+	"github.com/absmach/supermq-contrib/readers/cassandra"
 
 	"github.com/gocql/gocql"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	httpapi "github.com/absmach/magistrala/readers/api"
 	"github.com/absmach/supermq"
+	httpapi "github.com/absmach/supermq-contrib/readers/api"
 	smqlog "github.com/absmach/supermq/logger"
 	"github.com/absmach/supermq/pkg/authn/authsvc"
 	"github.com/absmach/supermq/pkg/grpcclient"

@@ -102,7 +102,7 @@ func EncodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", ContentType)
 	switch {
 	case errors.Contains(err, svcerr.ErrAuthorization),
-		errors.Contains(err, svcerr.ErrDomainAuthorization),
+		errors.Contains(err, svcerr.ErrDomainAuthorization):
 		err = unwrap(err)
 		w.WriteHeader(http.StatusForbidden)
 

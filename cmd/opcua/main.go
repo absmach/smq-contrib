@@ -13,7 +13,7 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
 	"github.com/absmach/supermq-contrib/opcua"
 	"github.com/absmach/supermq-contrib/opcua/api"
 	"github.com/absmach/supermq-contrib/opcua/db"
@@ -40,11 +40,11 @@ const (
 	envPrefixHTTP  = "MG_OPCUA_ADAPTER_HTTP_"
 	defSvcHTTPPort = "8180"
 
-	thingsRMPrefix     = "thing"
+	thingsRMPrefix     = "client"
 	channelsRMPrefix   = "channel"
 	connectionRMPrefix = "connection"
 
-	thingsStream = "events.magistrala.things"
+	thingsStream = "events.supermq.clients"
 )
 
 type config struct {
@@ -148,7 +148,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, httpCancel, svcName, httpServerConfig, api.MakeHandler(svc, logger, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, httpCancel)
+		chc := chclient.New(svcName, supermq.Version, logger, httpCancel)
 		go chc.CallHome(ctx)
 	}
 

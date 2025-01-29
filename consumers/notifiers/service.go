@@ -8,8 +8,9 @@ import (
 	"fmt"
 
 	"github.com/absmach/supermq"
+	"github.com/absmach/supermq/pkg/authn"
+
 	"github.com/absmach/supermq/consumers"
-	smqauthn "github.com/absmach/supermq/pkg/authn"
 	"github.com/absmach/supermq/pkg/errors"
 	svcerr "github.com/absmach/supermq/pkg/errors/service"
 	"github.com/absmach/supermq/pkg/messaging"
@@ -26,16 +27,16 @@ var _ consumers.AsyncConsumer = (*notifierService)(nil)
 type Service interface {
 	// CreateSubscription persists a subscription.
 	// Successful operation is indicated by non-nil error response.
-	CreateSubscription(ctx context.Context, token string, sub Subscription) (string, error)
+	CreateSubscription(ctx context.Context, session authn.Session, sub Subscription) (string, error)
 
 	// ViewSubscription retrieves the subscription for the given user and id.
-	ViewSubscription(ctx context.Context, token, id string) (Subscription, error)
+	ViewSubscription(ctx context.Context, session authn.Session, id string) (Subscription, error)
 
 	// ListSubscriptions lists subscriptions having the provided user token and search params.
-	ListSubscriptions(ctx context.Context, token string, pm PageMetadata) (Page, error)
+	ListSubscriptions(ctx context.Context, sesssion authn.Session, pm PageMetadata) (Page, error)
 
 	// RemoveSubscription removes the subscription having the provided identifier.
-	RemoveSubscription(ctx context.Context, token, id string) error
+	RemoveSubscription(ctx context.Context, session authn.Session, id string) error
 
 	consumers.BlockingConsumer
 }
@@ -43,7 +44,6 @@ type Service interface {
 var _ Service = (*notifierService)(nil)
 
 type notifierService struct {
-	authn    smqauthn.Authentication
 	subs     SubscriptionsRepository
 	idp      supermq.IDProvider
 	notifier consumers.Notifier
@@ -52,9 +52,8 @@ type notifierService struct {
 }
 
 // New instantiates the subscriptions service implementation.
-func New(authn smqauthn.Authentication, subs SubscriptionsRepository, idp supermq.IDProvider, notifier consumers.Notifier, from string) Service {
+func New(auth authn.Authentication, subs SubscriptionsRepository, idp supermq.IDProvider, notifier consumers.Notifier, from string) Service {
 	return &notifierService{
-		authn:    authn,
 		subs:     subs,
 		idp:      idp,
 		notifier: notifier,
@@ -63,45 +62,29 @@ func New(authn smqauthn.Authentication, subs SubscriptionsRepository, idp superm
 	}
 }
 
-func (ns *notifierService) CreateSubscription(ctx context.Context, token string, sub Subscription) (string, error) {
-	session, err := ns.authn.Authenticate(ctx, token)
+func (ns *notifierService) CreateSubscription(ctx context.Context, session authn.Session, sub Subscription) (string, error) {
+	id, err := ns.idp.ID()
 	if err != nil {
 		return "", err
 	}
-	sub.ID, err = ns.idp.ID()
-	if err != nil {
-		return "", err
-	}
-
+	sub.ID = id
 	sub.OwnerID = session.DomainUserID
-	id, err := ns.subs.Save(ctx, sub)
+	id, err = ns.subs.Save(ctx, sub)
 	if err != nil {
 		return "", errors.Wrap(svcerr.ErrCreateEntity, err)
 	}
 	return id, nil
 }
 
-func (ns *notifierService) ViewSubscription(ctx context.Context, token, id string) (Subscription, error) {
-	if _, err := ns.authn.Authenticate(ctx, token); err != nil {
-		return Subscription{}, err
-	}
-
+func (ns *notifierService) ViewSubscription(ctx context.Context, session authn.Session, id string) (Subscription, error) {
 	return ns.subs.Retrieve(ctx, id)
 }
 
-func (ns *notifierService) ListSubscriptions(ctx context.Context, token string, pm PageMetadata) (Page, error) {
-	if _, err := ns.authn.Authenticate(ctx, token); err != nil {
-		return Page{}, err
-	}
-
+func (ns *notifierService) ListSubscriptions(ctx context.Context, session authn.Session, pm PageMetadata) (Page, error) {
 	return ns.subs.RetrieveAll(ctx, pm)
 }
 
-func (ns *notifierService) RemoveSubscription(ctx context.Context, token, id string) error {
-	if _, err := ns.authn.Authenticate(ctx, token); err != nil {
-		return err
-	}
-
+func (ns *notifierService) RemoveSubscription(ctx context.Context, session authn.Session, id string) error {
 	return ns.subs.Remove(ctx, id)
 }
 

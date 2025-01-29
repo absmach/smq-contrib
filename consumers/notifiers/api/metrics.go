@@ -9,7 +9,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/absmach/magistrala/consumers/notifiers"
+	"github.com/absmach/supermq-contrib/consumers/notifiers"
+	"github.com/absmach/supermq/pkg/authn"
 	"github.com/go-kit/kit/metrics"
 )
 
@@ -31,43 +32,43 @@ func MetricsMiddleware(svc notifiers.Service, counter metrics.Counter, latency m
 }
 
 // CreateSubscription instruments CreateSubscription method with metrics.
-func (ms *metricsMiddleware) CreateSubscription(ctx context.Context, token string, sub notifiers.Subscription) (string, error) {
+func (ms *metricsMiddleware) CreateSubscription(ctx context.Context, session authn.Session, sub notifiers.Subscription) (string, error) {
 	defer func(begin time.Time) {
 		ms.counter.With("method", "create_subscription").Add(1)
 		ms.latency.With("method", "create_subscription").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	return ms.svc.CreateSubscription(ctx, token, sub)
+	return ms.svc.CreateSubscription(ctx, session, sub)
 }
 
 // ViewSubscription instruments ViewSubscription method with metrics.
-func (ms *metricsMiddleware) ViewSubscription(ctx context.Context, token, topic string) (notifiers.Subscription, error) {
+func (ms *metricsMiddleware) ViewSubscription(ctx context.Context, session authn.Session, topic string) (notifiers.Subscription, error) {
 	defer func(begin time.Time) {
 		ms.counter.With("method", "view_subscription").Add(1)
 		ms.latency.With("method", "view_subscription").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	return ms.svc.ViewSubscription(ctx, token, topic)
+	return ms.svc.ViewSubscription(ctx, session, topic)
 }
 
 // ListSubscriptions instruments ListSubscriptions method with metrics.
-func (ms *metricsMiddleware) ListSubscriptions(ctx context.Context, token string, pm notifiers.PageMetadata) (notifiers.Page, error) {
+func (ms *metricsMiddleware) ListSubscriptions(ctx context.Context, session authn.Session, pm notifiers.PageMetadata) (notifiers.Page, error) {
 	defer func(begin time.Time) {
 		ms.counter.With("method", "list_subscriptions").Add(1)
 		ms.latency.With("method", "list_subscriptions").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	return ms.svc.ListSubscriptions(ctx, token, pm)
+	return ms.svc.ListSubscriptions(ctx, session, pm)
 }
 
 // RemoveSubscription instruments RemoveSubscription method with metrics.
-func (ms *metricsMiddleware) RemoveSubscription(ctx context.Context, token, id string) error {
+func (ms *metricsMiddleware) RemoveSubscription(ctx context.Context, session authn.Session, id string) error {
 	defer func(begin time.Time) {
 		ms.counter.With("method", "remove_subscription").Add(1)
 		ms.latency.With("method", "remove_subscription").Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	return ms.svc.RemoveSubscription(ctx, token, id)
+	return ms.svc.RemoveSubscription(ctx, session, id)
 }
 
 // ConsumeBlocking instruments ConsumeBlocking method with metrics.

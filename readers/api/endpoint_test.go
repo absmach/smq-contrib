@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/absmach/magistrala/internal/testsutil"
-	"github.com/absmach/magistrala/readers/api"
+	"github.com/absmach/supermq-contrib/pkg/testsutil"
+	"github.com/absmach/supermq-contrib/readers/api"
 	grpcChannelsV1 "github.com/absmach/supermq/api/grpc/channels/v1"
 	grpcClientsV1 "github.com/absmach/supermq/api/grpc/clients/v1"
 	apiutil "github.com/absmach/supermq/api/http/util"

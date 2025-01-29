@@ -8,7 +8,6 @@ require (
 	github.com/0x6flab/namegenerator v1.4.0
 	github.com/absmach/callhome v0.14.0
 	github.com/absmach/magistrala v0.15.1
-	github.com/absmach/mg-contrib v0.0.0-20250121110903-394223aa03a3
 	github.com/absmach/senml v1.0.6
 	github.com/absmach/supermq v0.16.1-0.20250128110710-53cb10bb8983
 	github.com/caarlos0/env/v10 v10.0.0
@@ -111,6 +110,7 @@ require (
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect

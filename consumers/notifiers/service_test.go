@@ -10,8 +10,8 @@ import (
 
 	"github.com/absmach/supermq-contrib/consumers/notifiers"
 	"github.com/absmach/supermq-contrib/consumers/notifiers/mocks"
-	smqmocks "github.com/absmach/supermq-contrib/consumers/notifiers/mocks"
 	"github.com/absmach/supermq/consumers"
+	smqmocks "github.com/absmach/supermq/consumers/mocks"
 	smqauthn "github.com/absmach/supermq/pkg/authn"
 	authnmocks "github.com/absmach/supermq/pkg/authn/mocks"
 	"github.com/absmach/supermq/pkg/errors"

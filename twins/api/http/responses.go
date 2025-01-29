@@ -8,17 +8,17 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
 	"github.com/absmach/supermq-contrib/twins"
 )
 
 var (
-	_ magistrala.Response = (*twinRes)(nil)
-	_ magistrala.Response = (*viewTwinRes)(nil)
-	_ magistrala.Response = (*viewStateRes)(nil)
-	_ magistrala.Response = (*twinsPageRes)(nil)
-	_ magistrala.Response = (*statesPageRes)(nil)
-	_ magistrala.Response = (*removeRes)(nil)
+	_ supermq.Response = (*twinRes)(nil)
+	_ supermq.Response = (*viewTwinRes)(nil)
+	_ supermq.Response = (*viewStateRes)(nil)
+	_ supermq.Response = (*twinsPageRes)(nil)
+	_ supermq.Response = (*statesPageRes)(nil)
+	_ supermq.Response = (*removeRes)(nil)
 )
 
 type twinRes struct {

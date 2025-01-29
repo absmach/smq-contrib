@@ -13,7 +13,7 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
+	"github.com/absmach/supermq"
 	consumertracing "github.com/absmach/supermq-contrib/consumers/tracing"
 	"github.com/absmach/supermq-contrib/consumers/writers/api"
 	"github.com/absmach/supermq-contrib/consumers/writers/cassandra"
@@ -128,7 +128,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(svcName, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 
