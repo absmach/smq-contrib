@@ -13,20 +13,20 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/consumers"
-	consumertracing "github.com/absmach/magistrala/consumers/tracing"
-	"github.com/absmach/magistrala/consumers/writers/api"
-	mglog "github.com/absmach/magistrala/logger"
-	jaegerclient "github.com/absmach/magistrala/pkg/jaeger"
-	"github.com/absmach/magistrala/pkg/messaging/brokers"
-	brokerstracing "github.com/absmach/magistrala/pkg/messaging/brokers/tracing"
-	"github.com/absmach/magistrala/pkg/prometheus"
-	"github.com/absmach/magistrala/pkg/server"
-	httpserver "github.com/absmach/magistrala/pkg/server/http"
-	"github.com/absmach/magistrala/pkg/uuid"
-	"github.com/absmach/mg-contrib/consumers/writers/cassandra"
-	cassandraclient "github.com/absmach/mg-contrib/pkg/clients/cassandra"
+	"github.com/absmach/supermq"
+	consumertracing "github.com/absmach/supermq-contrib/consumers/tracing"
+	"github.com/absmach/supermq-contrib/consumers/writers/api"
+	"github.com/absmach/supermq-contrib/consumers/writers/cassandra"
+	cassandraclient "github.com/absmach/supermq-contrib/pkg/clients/cassandra"
+	"github.com/absmach/supermq/consumers"
+	mglog "github.com/absmach/supermq/logger"
+	jaegerclient "github.com/absmach/supermq/pkg/jaeger"
+	"github.com/absmach/supermq/pkg/messaging/brokers"
+	brokerstracing "github.com/absmach/supermq/pkg/messaging/brokers/tracing"
+	"github.com/absmach/supermq/pkg/prometheus"
+	"github.com/absmach/supermq/pkg/server"
+	httpserver "github.com/absmach/supermq/pkg/server/http"
+	"github.com/absmach/supermq/pkg/uuid"
 	"github.com/caarlos0/env/v10"
 	"github.com/gocql/gocql"
 	"golang.org/x/sync/errgroup"
@@ -128,7 +128,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(svcName, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 

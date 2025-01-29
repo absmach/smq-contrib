@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	mglog "github.com/absmach/magistrala/logger"
+	mglog "github.com/absmach/supermq/logger"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"go.mongodb.org/mongo-driver/mongo"

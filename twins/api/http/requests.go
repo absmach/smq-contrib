@@ -4,8 +4,8 @@
 package http
 
 import (
-	"github.com/absmach/magistrala/pkg/apiutil"
-	"github.com/absmach/mg-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins"
+	apiutil "github.com/absmach/supermq/api/http/util"
 )
 
 const (

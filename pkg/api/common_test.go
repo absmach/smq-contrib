@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/pkg/apiutil"
-	"github.com/absmach/magistrala/pkg/errors"
-	svcerr "github.com/absmach/magistrala/pkg/errors/service"
-	"github.com/absmach/mg-contrib/pkg/api"
-	"github.com/absmach/mg-contrib/pkg/testsutil"
+	"github.com/absmach/supermq-contrib/pkg/api"
+	"github.com/absmach/supermq-contrib/pkg/testsutil"
+	apiutil "github.com/absmach/supermq/api/http/util"
+	"github.com/absmach/supermq/pkg/errors"
+	svcerr "github.com/absmach/supermq/pkg/errors/service"
 	"github.com/stretchr/testify/assert"
 )
 

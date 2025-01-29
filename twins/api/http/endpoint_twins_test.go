@@ -13,13 +13,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/absmach/magistrala"
-	mglog "github.com/absmach/magistrala/logger"
-	"github.com/absmach/magistrala/pkg/apiutil"
-	svcerr "github.com/absmach/magistrala/pkg/errors/service"
-	"github.com/absmach/mg-contrib/pkg/testsutil"
-	"github.com/absmach/mg-contrib/twins"
-	httpapi "github.com/absmach/mg-contrib/twins/api/http"
+	"github.com/absmach/supermq"
+	"github.com/absmach/supermq-contrib/pkg/testsutil"
+	"github.com/absmach/supermq-contrib/twins"
+	httpapi "github.com/absmach/supermq-contrib/twins/api/http"
+	apiutil "github.com/absmach/supermq/api/http/util"
+	mglog "github.com/absmach/supermq/logger"
+	svcerr "github.com/absmach/supermq/pkg/errors/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -222,7 +222,7 @@ func TestAddTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", mock.Anything, &magistrala.IdentityReq{Token: tc.auth}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", mock.Anything, &supermq.IdentityReq{Token: tc.auth}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("Save", mock.Anything, mock.Anything).Return(retained, tc.saveErr)
 		cacheCall := twinCache.On("Save", mock.Anything, mock.Anything).Return(tc.err)
 		req := testRequest{
@@ -391,7 +391,7 @@ func TestUpdateTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", mock.Anything, &magistrala.IdentityReq{Token: tc.auth}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", mock.Anything, &supermq.IdentityReq{Token: tc.auth}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("RetrieveByID", mock.Anything, tc.id).Return(twins.Twin{}, tc.retrieveErr)
 		repoCall1 := twinRepo.On("Update", mock.Anything, mock.Anything).Return(tc.updateErr)
 		cacheCall := twinCache.On("Update", mock.Anything, mock.Anything).Return(tc.err)
@@ -486,7 +486,7 @@ func TestViewTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", mock.Anything, &magistrala.IdentityReq{Token: tc.auth}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", mock.Anything, &supermq.IdentityReq{Token: tc.auth}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("RetrieveByID", mock.Anything, tc.id).Return(tc.twin, tc.err)
 		req := testRequest{
 			client: ts.Client(),
@@ -737,7 +737,7 @@ func TestListTwins(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", mock.Anything, &magistrala.IdentityReq{Token: tc.auth}).Return(&magistrala.IdentityRes{Id: tc.userID}, nil)
+		authCall := auth.On("Identify", mock.Anything, &supermq.IdentityReq{Token: tc.auth}).Return(&supermq.IdentityRes{Id: tc.userID}, nil)
 		repoCall := twinRepo.On("RetrieveAll", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tc.page, tc.err)
 		req := testRequest{
 			client: ts.Client(),
@@ -831,7 +831,7 @@ func TestRemoveTwin(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", mock.Anything, &magistrala.IdentityReq{Token: tc.auth}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", mock.Anything, &supermq.IdentityReq{Token: tc.auth}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := twinRepo.On("Remove", mock.Anything, tc.id).Return(tc.removeErr)
 		cacheCall2 := twinCache.On("Remove", mock.Anything, tc.id).Return(tc.err)
 		req := testRequest{

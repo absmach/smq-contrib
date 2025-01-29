@@ -4,7 +4,7 @@
 package cassandra
 
 import (
-	"github.com/absmach/magistrala/pkg/errors"
+	"github.com/absmach/supermq/pkg/errors"
 	"github.com/caarlos0/env/v10"
 	"github.com/gocql/gocql"
 )

@@ -13,26 +13,25 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
-	mglog "github.com/absmach/magistrala/logger"
-	"github.com/absmach/magistrala/pkg/auth"
-	jaegerclient "github.com/absmach/magistrala/pkg/jaeger"
-	"github.com/absmach/magistrala/pkg/messaging"
-	"github.com/absmach/magistrala/pkg/messaging/brokers"
-	brokerstracing "github.com/absmach/magistrala/pkg/messaging/brokers/tracing"
-	"github.com/absmach/magistrala/pkg/prometheus"
-	"github.com/absmach/magistrala/pkg/server"
-	httpserver "github.com/absmach/magistrala/pkg/server/http"
-	"github.com/absmach/magistrala/pkg/uuid"
-	localusers "github.com/absmach/magistrala/things/standalone"
-	mongoclient "github.com/absmach/mg-contrib/pkg/clients/mongo"
-	redisclient "github.com/absmach/mg-contrib/pkg/clients/redis"
-	"github.com/absmach/mg-contrib/twins"
-	"github.com/absmach/mg-contrib/twins/api"
-	twapi "github.com/absmach/mg-contrib/twins/api/http"
-	"github.com/absmach/mg-contrib/twins/events"
-	twmongodb "github.com/absmach/mg-contrib/twins/mongodb"
-	"github.com/absmach/mg-contrib/twins/tracing"
+	"github.com/absmach/supermq"
+	mongoclient "github.com/absmach/supermq-contrib/pkg/clients/mongo"
+	redisclient "github.com/absmach/supermq-contrib/pkg/clients/redis"
+	"github.com/absmach/supermq-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins/api"
+	twapi "github.com/absmach/supermq-contrib/twins/api/http"
+	"github.com/absmach/supermq-contrib/twins/events"
+	twmongodb "github.com/absmach/supermq-contrib/twins/mongodb"
+	"github.com/absmach/supermq-contrib/twins/tracing"
+	mglog "github.com/absmach/supermq/logger"
+	auth "github.com/absmach/supermq/pkg/authn"
+	jaegerclient "github.com/absmach/supermq/pkg/jaeger"
+	"github.com/absmach/supermq/pkg/messaging"
+	"github.com/absmach/supermq/pkg/messaging/brokers"
+	brokerstracing "github.com/absmach/supermq/pkg/messaging/brokers/tracing"
+	"github.com/absmach/supermq/pkg/prometheus"
+	"github.com/absmach/supermq/pkg/server"
+	httpserver "github.com/absmach/supermq/pkg/server/http"
+	"github.com/absmach/supermq/pkg/uuid"
 	"github.com/caarlos0/env/v10"
 	"github.com/go-redis/redis/v8"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -122,28 +121,23 @@ func main() {
 	}()
 	tracer := tp.Tracer(svcName)
 
-	var authClient magistrala.AuthServiceClient
-	switch cfg.StandaloneID != "" && cfg.StandaloneToken != "" {
-	case true:
-		authClient = localusers.NewAuthService(cfg.StandaloneID, cfg.StandaloneToken)
-	default:
-		authConfig := auth.Config{}
-		if err := env.ParseWithOptions(&authConfig, env.Options{Prefix: envPrefixAuth}); err != nil {
-			logger.Error(fmt.Sprintf("failed to load %s auth configuration : %s", svcName, err))
-			exitCode = 1
-			return
-		}
-
-		authServiceClient, authHandler, err := auth.Setup(ctx, authConfig)
-		if err != nil {
-			logger.Error(err.Error())
-			exitCode = 1
-			return
-		}
-		defer authHandler.Close()
-		authClient = authServiceClient
-		logger.Info("Successfully connected to auth grpc server " + authHandler.Secure())
+	var authClient supermq.AuthServiceClient
+	authConfig := auth.Config{}
+	if err := env.ParseWithOptions(&authConfig, env.Options{Prefix: envPrefixAuth}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load %s auth configuration : %s", svcName, err))
+		exitCode = 1
+		return
 	}
+
+	authServiceClient, authHandler, err := auth.Setup(ctx, authConfig)
+	if err != nil {
+		logger.Error(err.Error())
+		exitCode = 1
+		return
+	}
+	defer authHandler.Close()
+	authClient = authServiceClient
+	logger.Info("Successfully connected to auth grpc server " + authHandler.Secure())
 
 	pubSub, err := brokers.NewPubSub(ctx, cfg.BrokerURL, logger)
 	if err != nil {
@@ -164,7 +158,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, twapi.MakeHandler(svc, logger, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 
@@ -181,7 +175,7 @@ func main() {
 	}
 }
 
-func newService(ctx context.Context, id string, ps messaging.PubSub, cfg config, users magistrala.AuthServiceClient, tracer trace.Tracer, db *mongo.Database, cacheclient *redis.Client, logger *slog.Logger) (twins.Service, error) {
+func newService(ctx context.Context, id string, ps messaging.PubSub, cfg config, users supermq.AuthServiceClient, tracer trace.Tracer, db *mongo.Database, cacheclient *redis.Client, logger *slog.Logger) (twins.Service, error) {
 	twinRepo := twmongodb.NewTwinRepository(db)
 	twinRepo = tracing.TwinRepositoryMiddleware(tracer, twinRepo)
 

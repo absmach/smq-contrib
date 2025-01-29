@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/absmach/mg-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins"
+	"github.com/absmach/supermq/pkg/errors"
 	"github.com/go-redis/redis/v8"
 )
 

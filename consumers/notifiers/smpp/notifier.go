@@ -6,16 +6,16 @@ package smpp
 import (
 	"time"
 
-	"github.com/absmach/magistrala/consumers/notifiers"
-	"github.com/absmach/magistrala/pkg/messaging"
-	"github.com/absmach/magistrala/pkg/transformers"
-	"github.com/absmach/magistrala/pkg/transformers/json"
+	"github.com/absmach/supermq/consumers"
+	"github.com/absmach/supermq/pkg/messaging"
+	"github.com/absmach/supermq/pkg/transformers"
+	"github.com/absmach/supermq/pkg/transformers/json"
 	"github.com/fiorix/go-smpp/smpp"
 	"github.com/fiorix/go-smpp/smpp/pdu/pdufield"
 	"github.com/fiorix/go-smpp/smpp/pdu/pdutext"
 )
 
-var _ notifiers.Notifier = (*notifier)(nil)
+var _ consumers.Notifier = (*notifier)(nil)
 
 type notifier struct {
 	transmitter   *smpp.Transmitter
@@ -27,7 +27,7 @@ type notifier struct {
 }
 
 // New instantiates SMTP message notifier.
-func New(cfg Config) notifiers.Notifier {
+func New(cfg Config) consumers.Notifier {
 	t := &smpp.Transmitter{
 		Addr:        cfg.Address,
 		User:        cfg.Username,

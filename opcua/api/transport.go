@@ -9,10 +9,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/pkg/apiutil"
-	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/absmach/mg-contrib/opcua"
+	"github.com/absmach/supermq"
+	"github.com/absmach/supermq-contrib/opcua"
+	apiutil "github.com/absmach/supermq/api/http/util"
+	"github.com/absmach/supermq/pkg/errors"
 	"github.com/go-chi/chi/v5"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -43,7 +43,7 @@ func MakeHandler(svc opcua.Service, logger *slog.Logger, instanceID string) http
 		opts...,
 	).ServeHTTP)
 
-	r.Get("/health", magistrala.Health("opcua-adapter", instanceID))
+	r.Get("/health", supermq.Health("opcua-adapter", instanceID))
 	r.Handle("/metrics", promhttp.Handler())
 
 	return r
@@ -88,7 +88,7 @@ func decodeBrowse(_ context.Context, r *http.Request) (interface{}, error) {
 func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 	w.Header().Set("Content-Type", contentType)
 
-	if ar, ok := response.(magistrala.Response); ok {
+	if ar, ok := response.(supermq.Response); ok {
 		for k, v := range ar.Headers() {
 			w.Header().Set(k, v)
 		}

@@ -13,25 +13,27 @@ import (
 	"os"
 
 	chclient "github.com/absmach/callhome/pkg/client"
-	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/consumers"
-	"github.com/absmach/magistrala/consumers/notifiers"
-	"github.com/absmach/magistrala/consumers/notifiers/api"
-	notifierpg "github.com/absmach/magistrala/consumers/notifiers/postgres"
-	"github.com/absmach/magistrala/consumers/notifiers/tracing"
-	mglog "github.com/absmach/magistrala/logger"
-	"github.com/absmach/magistrala/pkg/auth"
-	jaegerclient "github.com/absmach/magistrala/pkg/jaeger"
-	"github.com/absmach/magistrala/pkg/messaging/brokers"
-	brokerstracing "github.com/absmach/magistrala/pkg/messaging/brokers/tracing"
-	pgclient "github.com/absmach/magistrala/pkg/postgres"
-	"github.com/absmach/magistrala/pkg/prometheus"
-	"github.com/absmach/magistrala/pkg/server"
-	httpserver "github.com/absmach/magistrala/pkg/server/http"
-	"github.com/absmach/magistrala/pkg/ulid"
-	"github.com/absmach/magistrala/pkg/uuid"
-	"github.com/absmach/mg-contrib/consumers/notifiers/smtp"
-	email "github.com/absmach/mg-contrib/pkg/email"
+	"github.com/absmach/supermq"
+	"github.com/absmach/supermq-contrib/consumers/notifiers"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/api"
+	notifierpg "github.com/absmach/supermq-contrib/consumers/notifiers/postgres"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/smtp"
+	"github.com/absmach/supermq-contrib/consumers/notifiers/tracing"
+	email "github.com/absmach/supermq-contrib/pkg/email"
+	"github.com/absmach/supermq/consumers"
+	mglog "github.com/absmach/supermq/logger"
+	"github.com/absmach/supermq/pkg/authn"
+	"github.com/absmach/supermq/pkg/authn/authsvc"
+	"github.com/absmach/supermq/pkg/grpcclient"
+	jaegerclient "github.com/absmach/supermq/pkg/jaeger"
+	"github.com/absmach/supermq/pkg/messaging/brokers"
+	brokerstracing "github.com/absmach/supermq/pkg/messaging/brokers/tracing"
+	pgclient "github.com/absmach/supermq/pkg/postgres"
+	"github.com/absmach/supermq/pkg/prometheus"
+	"github.com/absmach/supermq/pkg/server"
+	httpserver "github.com/absmach/supermq/pkg/server/http"
+	"github.com/absmach/supermq/pkg/ulid"
+	"github.com/absmach/supermq/pkg/uuid"
 	"github.com/caarlos0/env/v10"
 	"github.com/jmoiron/sqlx"
 	"go.opentelemetry.io/otel/trace"
@@ -39,23 +41,25 @@ import (
 )
 
 const (
-	svcName        = "smtp-notifier"
-	envPrefixDB    = "MG_SMTP_NOTIFIER_DB_"
-	envPrefixHTTP  = "MG_SMTP_NOTIFIER_HTTP_"
-	envPrefixAuth  = "MG_AUTH_GRPC_"
-	defDB          = "subscriptions"
-	defSvcHTTPPort = "9015"
+	svcName           = "smtp-notifier"
+	envPrefixDB       = "MG_SMTP_NOTIFIER_DB_"
+	envPrefixHTTP     = "MG_SMTP_NOTIFIER_HTTP_"
+	envPrefixAuth     = "SMQ_AUTH_GRPC_"
+	envPrefixClients  = "SMQ_CLIENTS_AUTH_GRPC_"
+	envPrefixChannels = "SMQ_CHANNELS_GRPC_"
+	defDB             = "subscriptions"
+	defSvcHTTPPort    = "9015"
 )
 
 type config struct {
-	LogLevel      string  `env:"MG_SMTP_NOTIFIER_LOG_LEVEL"    envDefault:"info"`
-	ConfigPath    string  `env:"MG_SMTP_NOTIFIER_CONFIG_PATH"  envDefault:"/config.toml"`
-	From          string  `env:"MG_SMTP_NOTIFIER_FROM_ADDR"    envDefault:""`
-	BrokerURL     string  `env:"MG_MESSAGE_BROKER_URL"         envDefault:"nats://localhost:4222"`
-	JaegerURL     url.URL `env:"MG_JAEGER_URL"                 envDefault:"http://jaeger:14268/api/traces"`
-	SendTelemetry bool    `env:"MG_SEND_TELEMETRY"             envDefault:"true"`
-	InstanceID    string  `env:"MG_SMTP_NOTIFIER_INSTANCE_ID"  envDefault:""`
-	TraceRatio    float64 `env:"MG_JAEGER_TRACE_RATIO"         envDefault:"1.0"`
+	LogLevel      string  `env:"SMQ_SMTP_NOTIFIER_LOG_LEVEL"    envDefault:"info"`
+	ConfigPath    string  `env:"SMQ_SMTP_NOTIFIER_CONFIG_PATH"  envDefault:"/config.toml"`
+	From          string  `env:"SMQ_SMTP_NOTIFIER_FROM_ADDR"    envDefault:""`
+	BrokerURL     string  `env:"SMQ_MESSAGE_BROKER_URL"         envDefault:"nats://localhost:4222"`
+	JaegerURL     url.URL `env:"SMQ_JAEGER_URL"                 envDefault:"http://jaeger:14268/api/traces"`
+	SendTelemetry bool    `env:"SMQ_SEND_TELEMETRY"             envDefault:"true"`
+	InstanceID    string  `env:"SMQ_SMTP_NOTIFIER_INSTANCE_ID"  envDefault:""`
+	TraceRatio    float64 `env:"SMQ_JAEGER_TRACE_RATIO"         envDefault:"1.0"`
 }
 
 func main() {
@@ -133,24 +137,30 @@ func main() {
 	defer pubSub.Close()
 	pubSub = brokerstracing.NewPubSub(httpServerConfig, tracer, pubSub)
 
-	authConfig := auth.Config{}
-	if err := env.ParseWithOptions(&authConfig, env.Options{Prefix: envPrefixAuth}); err != nil {
-		logger.Error(fmt.Sprintf("failed to load %s auth configuration : %s", svcName, err))
+	clientsClientCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&clientsClientCfg, env.Options{Prefix: envPrefixClients}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load clients gRPC client configuration : %s", err))
 		exitCode = 1
 		return
 	}
 
-	authClient, authHandler, err := auth.Setup(ctx, authConfig)
+	authnCfg := grpcclient.Config{}
+	if err := env.ParseWithOptions(&authnCfg, env.Options{Prefix: envPrefixAuth}); err != nil {
+		logger.Error(fmt.Sprintf("failed to load auth gRPC client configuration : %s", err))
+		exitCode = 1
+		return
+	}
+
+	authn, authnHandler, err := authsvc.NewAuthentication(ctx, authnCfg)
 	if err != nil {
 		logger.Error(err.Error())
 		exitCode = 1
 		return
 	}
-	defer authHandler.Close()
+	defer authnHandler.Close()
+	logger.Info("authn successfully connected to auth gRPC server " + authnHandler.Secure())
 
-	logger.Info("Successfully connected to auth grpc server " + authHandler.Secure())
-
-	svc, err := newService(db, tracer, authClient, cfg, ec, logger)
+	svc, err := newService(db, authn, tracer, cfg, ec, logger)
 	if err != nil {
 		logger.Error(err.Error())
 		exitCode = 1
@@ -166,7 +176,7 @@ func main() {
 	hs := httpserver.NewServer(ctx, cancel, svcName, httpServerConfig, api.MakeHandler(svc, logger, cfg.InstanceID), logger)
 
 	if cfg.SendTelemetry {
-		chc := chclient.New(svcName, magistrala.Version, logger, cancel)
+		chc := chclient.New(svcName, supermq.Version, logger, cancel)
 		go chc.CallHome(ctx)
 	}
 
@@ -183,7 +193,7 @@ func main() {
 	}
 }
 
-func newService(db *sqlx.DB, tracer trace.Tracer, authClient magistrala.AuthServiceClient, c config, ec email.Config, logger *slog.Logger) (notifiers.Service, error) {
+func newService(db *sqlx.DB, authClient authn.Authentication, tracer trace.Tracer, c config, ec email.Config, logger *slog.Logger) (notifiers.Service, error) {
 	database := notifierpg.NewDatabase(db, tracer)
 	repo := tracing.New(tracer, notifierpg.New(database))
 	idp := ulid.New()

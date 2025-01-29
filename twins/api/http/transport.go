@@ -10,11 +10,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/pkg/apiutil"
-	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/absmach/mg-contrib/pkg/api"
-	"github.com/absmach/mg-contrib/twins"
+	"github.com/absmach/supermq"
+	"github.com/absmach/supermq-contrib/pkg/api"
+	"github.com/absmach/supermq-contrib/twins"
+	apiutil "github.com/absmach/supermq/api/http/util"
+	"github.com/absmach/supermq/pkg/errors"
 	"github.com/go-chi/chi/v5"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -78,7 +78,7 @@ func MakeHandler(svc twins.Service, logger *slog.Logger, instanceID string) http
 		opts...,
 	), "list_states").ServeHTTP)
 
-	r.Get("/health", magistrala.Health("twins", instanceID))
+	r.Get("/health", supermq.Health("twins", instanceID))
 	r.Handle("/metrics", promhttp.Handler())
 
 	return r

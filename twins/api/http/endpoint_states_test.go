@@ -10,15 +10,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/absmach/magistrala"
-	authmocks "github.com/absmach/magistrala/auth/mocks"
-	mglog "github.com/absmach/magistrala/logger"
-	svcerr "github.com/absmach/magistrala/pkg/errors/service"
-	"github.com/absmach/magistrala/pkg/uuid"
-	"github.com/absmach/mg-contrib/pkg/testsutil"
-	"github.com/absmach/mg-contrib/twins"
-	"github.com/absmach/mg-contrib/twins/mocks"
 	"github.com/absmach/senml"
+	"github.com/absmach/supermq"
+	"github.com/absmach/supermq-contrib/pkg/testsutil"
+	"github.com/absmach/supermq-contrib/twins"
+	"github.com/absmach/supermq-contrib/twins/mocks"
+	authmocks "github.com/absmach/supermq/auth/mocks"
+	mglog "github.com/absmach/supermq/logger"
+	svcerr "github.com/absmach/supermq/pkg/errors/service"
+	"github.com/absmach/supermq/pkg/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -261,7 +261,7 @@ func TestListStates(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		authCall := auth.On("Identify", mock.Anything, &magistrala.IdentityReq{Token: tc.token}).Return(&magistrala.IdentityRes{Id: tc.userID}, tc.identifyErr)
+		authCall := auth.On("Identify", mock.Anything, &supermq.IdentityReq{Token: tc.token}).Return(&supermq.IdentityRes{Id: tc.userID}, tc.identifyErr)
 		repoCall := stateRepo.On("RetrieveAll", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tc.page, tc.err)
 		req := testRequest{
 			client: ts.Client(),

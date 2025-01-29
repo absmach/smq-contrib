@@ -7,13 +7,10 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-
-	"github.com/absmach/magistrala"
-	"github.com/absmach/magistrala/bootstrap"
-	"github.com/absmach/magistrala/pkg/apiutil"
-	mgclients "github.com/absmach/magistrala/pkg/clients"
-	"github.com/absmach/magistrala/pkg/errors"
-	svcerr "github.com/absmach/magistrala/pkg/errors/service"
+	"github.com/absmach/supermq"
+	apiutil "github.com/absmach/supermq/api/http/util"
+	"github.com/absmach/supermq/pkg/errors"
+	svcerr "github.com/absmach/supermq/pkg/errors/service"
 	"github.com/gofrs/uuid"
 )
 
@@ -52,8 +49,6 @@ const (
 	DefLimit         = 10
 	DefLevel         = 0
 	DefStatus        = "enabled"
-	DefClientStatus  = mgclients.Enabled
-	DefGroupStatus   = mgclients.Enabled
 	DefListPerms     = false
 	SharedVisibility = "shared"
 	MyVisibility     = "mine"
@@ -82,7 +77,7 @@ func ValidateUUID(extID string) (err error) {
 
 // EncodeResponse encodes successful response.
 func EncodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-	if ar, ok := response.(magistrala.Response); ok {
+	if ar, ok := response.(supermq.Response); ok {
 		for k, v := range ar.Headers() {
 			w.Header().Set(k, v)
 		}
@@ -107,9 +102,7 @@ func EncodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", ContentType)
 	switch {
 	case errors.Contains(err, svcerr.ErrAuthorization),
-		errors.Contains(err, svcerr.ErrDomainAuthorization),
-		errors.Contains(err, bootstrap.ErrExternalKey),
-		errors.Contains(err, bootstrap.ErrExternalKeySecure):
+		errors.Contains(err, svcerr.ErrDomainAuthorization):
 		err = unwrap(err)
 		w.WriteHeader(http.StatusForbidden)
 
@@ -152,7 +145,6 @@ func EncodeError(_ context.Context, err error, w http.ResponseWriter) {
 		errors.Contains(err, apiutil.ErrMissingCertData),
 		errors.Contains(err, apiutil.ErrInvalidContact),
 		errors.Contains(err, apiutil.ErrInvalidTopic),
-		errors.Contains(err, bootstrap.ErrAddBootstrap),
 		errors.Contains(err, apiutil.ErrInvalidCertData),
 		errors.Contains(err, apiutil.ErrEmptyMessage),
 		errors.Contains(err, apiutil.ErrInvalidLevel),
@@ -172,7 +164,6 @@ func EncodeError(_ context.Context, err error, w http.ResponseWriter) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 
 	case errors.Contains(err, svcerr.ErrNotFound),
-		errors.Contains(err, bootstrap.ErrBootstrap):
 		err = unwrap(err)
 		w.WriteHeader(http.StatusNotFound)
 

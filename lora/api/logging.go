@@ -10,7 +10,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/absmach/magistrala/lora"
+	"github.com/absmach/supermq-contrib/lora"
 )
 
 var _ lora.Service = (*loggingMiddleware)(nil)

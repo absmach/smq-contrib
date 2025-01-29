@@ -6,8 +6,8 @@ package mocks
 import (
 	"context"
 
-	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/absmach/magistrala/pkg/messaging"
+	"github.com/absmach/supermq/pkg/errors"
+	"github.com/absmach/supermq/pkg/messaging"
 )
 
 var _ messaging.Publisher = (*mockBroker)(nil)

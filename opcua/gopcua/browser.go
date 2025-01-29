@@ -7,8 +7,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/absmach/magistrala/pkg/errors"
-	"github.com/absmach/mg-contrib/opcua"
+	"github.com/absmach/supermq-contrib/opcua"
+	"github.com/absmach/supermq/pkg/errors"
 	opcuagocpua "github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/id"
 	uagocpua "github.com/gopcua/opcua/ua"
